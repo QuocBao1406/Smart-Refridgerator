@@ -1,0 +1,2 @@
+model: chứa các đối tượng
+dao: chứa các hàm truy vấn SQL (@Insert suspend fun insert(food: FoodItem), kiểu như để thêm vào db thì dao.insert() kiểu v
