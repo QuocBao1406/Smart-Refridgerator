@@ -1,2 +1,20 @@
 model: chứa các đối tượng
+
 dao: chứa các hàm truy vấn SQL (@Insert suspend fun insert(food: FoodItem), kiểu như để thêm vào db thì dao.insert() kiểu v
+
+Cấu trúc chia 4 phần:
+1.Tầng Data (Model):
+- model ( kiểu như mô tả về món hàng ( tên, số lượng, hạn sử dụng)
+-  dao ( kiểu như dùng để ra lệnh va database SQL( SELLECT, INSERT )
+- database ( là cái mini database trong điện thoại )
+2. Tầng Repository
+- Tầng UI không trực tiếp vào Tầng Data mà phải thông qua tầng này
+- App có thể lấy thông dữ liệu từ nhiều nguồn nên phần này sẽ giúp UI
+3. Tầng ViewModel
+- Nơi chứa Logic xử lý
+- Nhận yêu cầu người dùng từ view rồi gọi cho Repository
+- Giữ dữ liệu ở trạng thái sống để giao diện hiển th đúng số liệu ới nhất. Xoay ngang dock k mất dữ liệu
+4. Tầng UI (View)
+- Xây dựng view
+- Lấy biến từ ViewModel và hiển thị ra màn hình
+- khi bấm nút gọi hàm trong viewModel xử lý
