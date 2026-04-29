@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.fridge.data.model.FoodItem
-import com.example.fridge.ui.components.AddFoodDialog
+import com.example.fridge.ui.components.AddFoodBottomSheet
 import com.example.fridge.ui.components.FoodDetaildEditDialog
 import com.example.fridge.ui.components.FoodItemCard
 import com.example.fridge.ui.viewmodel.FridgeViewModel
@@ -33,8 +33,13 @@ fun FridgeScreen(viewModel: FridgeViewModel) {
     var selectedFood by remember { mutableStateOf<FoodItem?>(null)}
     var currentTab by remember { mutableStateOf(0) }
 
+    val title = when(currentTab) {
+        0 -> "Tủ Lạnh"
+        1 -> "Báo Cáo"
+        else -> "Cấu Hình"
+    }
+
     MainLayout(
-        title = "Smart Fridge",
         onFabClick = {
             showAddDialog = true
         },
@@ -46,12 +51,12 @@ fun FridgeScreen(viewModel: FridgeViewModel) {
                 HomeTab(
                     foodList = foodListState,
                     onDeleteFood = { viewModel.deleteFood(it) },
-                    onFoodClick = { selectedFood = it },
+                    onCardClick = { selectedFood = it },
                     modifier = Modifier.padding(paddingValues)
                 )
             }
             1 -> {
-                Statistics(
+                StatisticsTab(
                     foodList = foodListState,
                     modifier = Modifier.padding(paddingValues)
                 )
@@ -67,7 +72,7 @@ fun FridgeScreen(viewModel: FridgeViewModel) {
         }
 
         if(showAddDialog == true) {
-            AddFoodDialog(
+            AddFoodBottomSheet(
                 onDismiss = {
                     showAddDialog = false
                 },
@@ -80,8 +85,6 @@ fun FridgeScreen(viewModel: FridgeViewModel) {
                         type = type,
                         expiry = expiry
                     )
-
-                    showAddDialog = false
                 }
             )
         }

@@ -1,31 +1,27 @@
 package com.example.fridge.ui.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.sp
+import com.example.fridge.R
 import com.example.fridge.data.model.FoodItem
 import com.example.fridge.ui.components.FoodItemCard
 
@@ -33,119 +29,169 @@ import com.example.fridge.ui.components.FoodItemCard
 fun HomeTab(
     foodList: List<FoodItem>,
     onDeleteFood: (FoodItem) -> Unit,
-    onFoodClick: (FoodItem) -> Unit,
+    onCardClick: (FoodItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf("Tất cả") }
 
+    val categories = listOf("Tất cả", "Thịt & Cá", "Rau củ", "Trái cây", "Trứng", "Đồ uống", "Khác")
+
+    
     val filteredList = foodList.filter { food ->
-        food.name.contains(searchQuery, ignoreCase = true)
+        val matchesSearch = food.name.contains(searchQuery, ignoreCase = true)
+        val matchesCategory = if (selectedCategory == "Tất cả") true else food.type == selectedCategory
+        matchesSearch && matchesCategory
     }
 
-    val sortedFoodList = foodList.sortedBy { it.expiry }
-    val currentTime = System.currentTimeMillis()
-    val twoDaysInMillis = 2L * 24 * 60 * 60 * 1000
-
-    val expiredList = sortedFoodList.filter { it. expiry < currentTime }
-
-    val expiringSoonList = sortedFoodList.filter {
-        it.expiry >= currentTime && it.expiry <= (currentTime + twoDaysInMillis)
-    }
-
-    val normalList = sortedFoodList.filter {
-        it.expiry > (currentTime + twoDaysInMillis)
-    }
-
-    Column (modifier = modifier.fillMaxSize()) {
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color(0xFFF3FDFF))
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            placeholder = { Text("Tìm kiếm đồ ăn...") },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Tìm") },
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = { searchQuery = ""}) {
-                        Icon(Icons.Filled.Clear, contentDescription = "Xóa")
+                .background(Color(0xFFF3FDFF))
+                .padding(top = 12.dp, bottom = 8.dp)
+        ) {
+            PremiumSearchBar(
+                query = searchQuery,
+                onQueryChange = { searchQuery = it },
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(categories) { category ->
+                    val isSelected = selectedCategory == category
+                    Surface(
+                        onClick = { selectedCategory = category },
+                        shape = CircleShape,
+                        color = if (isSelected) Color(0xFF1C1C1E) else Color(0xFFF2F2F7),
+                        modifier = Modifier.height(36.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = category,
+                                fontSize = 14.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isSelected) Color.White else Color(0xFF8E8E93)
+                            )
+                        }
                     }
                 }
-            },
-            singleLine = true,
-            shape = RoundedCornerShape(24.dp)
-        )
-
-        LazyColumn(
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(16.dp)
-        ) {
-            //expiredList
-            if (expiredList.isNotEmpty()) {
-                item {
-                    Text(
-                        text = "Đã hết hạn",
-                        color = Color.Red,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp, top = 8.dp)
-                    )
-                }
-                items(
-                    items = expiredList,
-                    key = { it.id }
-                ) { food ->
-                    FoodItemCard(
-                        food = food,
-                        onDeleteClick = { onDeleteFood(it) },
-                        onCardClick = { onFoodClick(it) }
-                    )
-                }
             }
+        }
 
-            if (expiringSoonList.isNotEmpty()) {
-                item {
-                    Text(
-                        text = "Sắp hết hạn",
-                        color = Color(0xFFE65100),
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp, top = 16.dp)
-                    )
-                }
-                items(
-                    items = expiringSoonList,
-                    key = { it.id }
-                ) { food ->
+        if (filteredList.isEmpty()) {
+            EmptyStateDisplay(isSearchEmpty = searchQuery.isNotEmpty())
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 24.dp, end = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp) 
+            ) {
+                items(filteredList, key = { it.id }) { food -> 
                     FoodItemCard(
                         food = food,
-                        onDeleteClick = { onDeleteFood(it) },
-                        onCardClick = { onFoodClick(it) }
-                    )
-                }
-            }
-
-            if (normalList.isNotEmpty()) {
-                item {
-                    Text(
-                        text = "Bình thường",
-                        color = Color(0xFF2E7D32),
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp, top = 16.dp)
-                    )
-                }
-                items(
-                    items = normalList,
-                    key = { it.id }
-                ) { food ->
-                    FoodItemCard(
-                        food = food,
-                        onDeleteClick = { onDeleteFood(it) },
-                        onCardClick = { onFoodClick(it) }
+                        onDeleteFood = onDeleteFood,
+                        onCardClick = onCardClick
                     )
                 }
             }
         }
+    }
+}
+
+
+
+@Composable
+fun PremiumSearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BasicTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        singleLine = true,
+        textStyle = TextStyle(color = Color(0xFF1C1C1E), fontSize = 16.sp),
+        decorationBox = { innerTextField ->
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .background(Color(0xFFF2F2F7), CircleShape) 
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Outlined.Search, null, tint = Color(0xFF8E8E93), modifier = Modifier.size(22.dp))
+                Spacer(modifier = Modifier.width(12.dp))
+                Box(modifier = Modifier.weight(1f)) {
+                    if (query.isEmpty()) {
+                        Text("Tìm kiếm đồ ăn...", color = Color(0xFF8E8E93), fontSize = 16.sp)
+                    }
+                    innerTextField()
+                }
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = { onQueryChange("") }, modifier = Modifier.size(24.dp)) {
+                        Icon(Icons.Outlined.Close, null, tint = Color(0xFF8E8E93), modifier = Modifier.size(18.dp))
+                    }
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun EmptyStateDisplay(isSearchEmpty: Boolean) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp)
+            .padding(bottom = 64.dp), 
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(120.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.empty_box),
+                contentDescription = "Empty",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(120.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = if (isSearchEmpty) "Không tìm thấy món nào!" else "Tủ lạnh đang trống",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1C1C1E)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = if (isSearchEmpty) "Thử dùng từ khóa khác hoặc kiểm tra lại chính tả nhé." else "Hãy bấm nút '+' để bắt đầu quản lý thực phẩm của bạn.",
+            fontSize = 14.sp,
+            color = Color(0xFF8E8E93),
+            textAlign = TextAlign.Center,
+            lineHeight = 20.sp
+        )
     }
 }

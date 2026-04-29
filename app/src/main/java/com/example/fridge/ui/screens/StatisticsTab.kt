@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.example.fridge.data.model.FoodItem
 
 @Composable
-fun Statistics(foodList: List<FoodItem>, modifier: Modifier = Modifier) {
+fun StatisticsTab(foodList: List<FoodItem>, modifier: Modifier = Modifier) {
     val totalItems = foodList.size
     val currentTime = System.currentTimeMillis()
 
