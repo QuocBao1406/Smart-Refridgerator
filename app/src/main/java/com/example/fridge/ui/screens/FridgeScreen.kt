@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.fridge.data.model.FoodItem
 import com.example.fridge.ui.components.AddFoodBottomSheet
+import com.example.fridge.ui.components.BottomNavTab
 import com.example.fridge.ui.components.FoodDetaildEditDialog
 import com.example.fridge.ui.components.FoodItemCard
 import com.example.fridge.ui.viewmodel.FridgeViewModel
@@ -31,23 +32,22 @@ fun FridgeScreen(viewModel: FridgeViewModel) {
     val foodListState by viewModel.allFoodItem.collectAsState(initial = emptyList())
     var showAddDialog by remember { mutableStateOf(false) }
     var selectedFood by remember { mutableStateOf<FoodItem?>(null)}
-    var currentTab by remember { mutableStateOf(0) }
 
-    val title = when(currentTab) {
-        0 -> "Tủ Lạnh"
-        1 -> "Báo Cáo"
-        else -> "Cấu Hình"
-    }
+    var currentTab by remember { mutableStateOf<BottomNavTab>(BottomNavTab.Overview) }
 
     MainLayout(
-        onFabClick = {
-            showAddDialog = true
-        },
+        onFabClick = { showAddDialog = true },
         currentTab = currentTab,
         onTabSelected = { newTab -> currentTab = newTab }
     ) { paddingValues ->
         when (currentTab) {
-            0 -> {
+            BottomNavTab.Overview -> {
+                OverviewTab(
+                    foodList = foodListState,
+                    modifier = Modifier.padding(paddingValues)
+                )
+            }
+            BottomNavTab.Fridge -> {
                 HomeTab(
                     foodList = foodListState,
                     onDeleteFood = { viewModel.deleteFood(it) },
@@ -55,27 +55,14 @@ fun FridgeScreen(viewModel: FridgeViewModel) {
                     modifier = Modifier.padding(paddingValues)
                 )
             }
-            1 -> {
-                StatisticsTab(
-                    foodList = foodListState,
-                    modifier = Modifier.padding(paddingValues)
-                )
-            }
-            2 -> {
-                Box(
-                    modifier = Modifier.padding(paddingValues).fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Màn hình Cài đặt đang xây dựng ⚙\uFE0F")
-                }
+            BottomNavTab.Suggest -> {
+                Text("Gợi ý")
             }
         }
 
         if(showAddDialog == true) {
             AddFoodBottomSheet(
-                onDismiss = {
-                    showAddDialog = false
-                },
+                onDismiss = { showAddDialog = false },
                 onSave = { name, image, quantity, unit, type, expiry ->
                     viewModel.addFood(
                         name = name,

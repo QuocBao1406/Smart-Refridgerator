@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -42,20 +43,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.fridge.R
+import com.example.fridge.ui.components.BottomNavTab
 import com.example.fridge.ui.components.BottomNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainLayout(
     onFabClick: () -> Unit,
-    onTabSelected: (Int) -> Unit,
-    currentTab: Int,
+    onTabSelected: (BottomNavTab) -> Unit,
+    currentTab: BottomNavTab,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val headerInfo = when(currentTab) {
-        0 -> "Quản Lý" to "Tủ lạnh của bạn"
-        1 -> "Báo Cáo" to "Thống kê tiêu thụ"
-        else -> "Cài đặt" to "Cài đặt ứng dụng"
+        BottomNavTab.Overview -> "Tổng Quan" to "Đồ ăn hôm nay"
+        BottomNavTab.Fridge -> "Quản Lý" to "Tủ lạnh của bạn"
+        BottomNavTab.Suggest -> "Gợi Ý" to "Món ăn thông minh"
     }
 
     Scaffold(
@@ -67,7 +69,7 @@ fun MainLayout(
         },
 
         floatingActionButton = {
-            if (currentTab == 0) {
+            if (currentTab == BottomNavTab.Fridge) {
                 Box(
                     modifier = Modifier
                         .size(56.dp)
@@ -81,29 +83,13 @@ fun MainLayout(
             }
         },
 
+        floatingActionButtonPosition = FabPosition.End,
+
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Kitchen, contentDescription = "Tủ lạnh") },
-                    label = { Text("Tủ lạnh") },
-                    selected = currentTab == 0,
-                    onClick = { onTabSelected(0) }
-                )
-
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Analytics, contentDescription = "Thống kê")},
-                    label = { Text("Thống kê") },
-                    selected = currentTab == 1,
-                    onClick = { onTabSelected(1) }
-                )
-
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Settings, contentDescription = "Cài đặt")},
-                    label = { Text("Cài đặt") },
-                    selected = currentTab == 2,
-                    onClick = { onTabSelected(2) }
-                )
-            }
+            BottomNavigationBar(
+                currentTab = currentTab,
+                onTabSelected = onTabSelected
+            )
         }
 
     ) { paddingValues ->
