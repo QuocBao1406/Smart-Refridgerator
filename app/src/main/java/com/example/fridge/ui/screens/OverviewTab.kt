@@ -41,10 +41,10 @@ fun OverviewTab(
     val scrollState = rememberScrollState()
 
     val currentTime = System.currentTimeMillis()
-    val threeDaysInMillis = 3L * 24 * 60 * 60 * 1000
+    val twoDaysInMillis = 1L * 24 * 60 * 60 * 1000
     val totalItems = foodList.size
-    val expiredItems = foodList.filter { it.expiry < currentTime }
-    val expiringSoonItems = foodList.filter { it.expiry in currentTime..(currentTime + threeDaysInMillis) }
+    val expiredItems = foodList.filter { it.expiry < currentTime - (1L * 24 * 60 * 60 * 1000) }
+    val expiringSoonItems = foodList.filter { it.expiry in currentTime - (1L * 24 * 60 * 60 * 1000)..(currentTime + twoDaysInMillis) }
     val safeCount = totalItems - expiredItems.size - expiringSoonItems.size
 
     val urgentItems = (expiredItems + expiringSoonItems).sortedBy { it.expiry }
@@ -216,10 +216,19 @@ fun StatCard(title: String, value: String, iconColor: Color, bgColor: Color, ico
 
 @Composable
 fun MiniUrgentCard(food: FoodItem, currentTime: Long) {
-    val isExpired = food.expiry < currentTime
+    val diffMillis = food.expiry - currentTime + (24 * 60 * 60 * 1000)
+    val daysLeft = (diffMillis / (24 * 60 * 60 * 1000)).toInt()
+
+    val isExpired = diffMillis < 0
     val statusColor = if (isExpired) Color(0xFFFF3B30) else Color(0xFFFF9500)
-    val statusText = if (isExpired) "Đã quá hạn!" else "Sắp hỏng"
     val statusIcon = if (isExpired) Icons.Outlined.ErrorOutline else Icons.Outlined.WarningAmber
+
+
+    val statusText = when {
+        isExpired -> "Đã quá hạn!"
+        daysLeft == 0 -> "Hết hạn hôm nay"
+        else -> "Còn $daysLeft ngày"
+    }
 
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -230,17 +239,17 @@ fun MiniUrgentCard(food: FoodItem, currentTime: Long) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(60.dp)
                     .clip(RoundedCornerShape(14.dp))
                     .background(statusColor.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
-                FoodIcon(iconKey = food.image, modifier = Modifier.size(28.dp))
+                FoodIcon(iconKey = food.image, modifier = Modifier.size(40.dp))
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -248,18 +257,18 @@ fun MiniUrgentCard(food: FoodItem, currentTime: Long) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = food.name,
-                    fontSize = 16.sp,
+                    fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF2C3241),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
                     text = statusText,
-                    fontSize = 12.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Black,
                     color = statusColor
                 )

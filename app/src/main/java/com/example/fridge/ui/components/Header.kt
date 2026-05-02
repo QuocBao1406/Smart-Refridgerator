@@ -22,6 +22,8 @@ import com.example.fridge.R
 fun Header(
     title: String,
     subtitle: String,
+    unreadCount: Int = 0,
+    onNotificationClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -42,6 +44,7 @@ fun Header(
                 letterSpacing = (-0.5).sp
             )
             Spacer(modifier = Modifier.height(2.dp))
+
             Text(
                 text = subtitle,
                 color = Color(0xFF77A7AD),
@@ -49,21 +52,28 @@ fun Header(
                 fontWeight = FontWeight.SemiBold,
                 letterSpacing = 0.5.sp
             )
-
-
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(
-                onClick = {},
+                onClick = onNotificationClick,
                 modifier = Modifier.size(40.dp)
             ) {
                 BadgedBox(
                     badge = {
-                        Badge(
-                            containerColor = Color(0xFFFF3B30),
-                            modifier = Modifier.size(10.dp)
-                        )
+                        if (unreadCount > 0) {
+                            Badge(
+                                containerColor = Color(0xFFFF3B30),
+                                contentColor = Color.White
+                            ) {
+                                Text(
+                                    if (unreadCount > 9) "9+" else unreadCount.toString(),
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+
+                            }
+                        }
                     }
                 ) {
                     Icon(

@@ -71,12 +71,12 @@ fun AddFoodBottomSheet(
 
 
     val categoryOptions = listOf(
-        CategoryItem("Thịt & Cá", R.drawable.meat_fish, 3),
-        CategoryItem("Rau củ", R.drawable.vegetable, 5),
-        CategoryItem("Trái cây", R.drawable.fruits, 7),
+        CategoryItem("Thịt & Cá", R.drawable.meat_fish, 6),
+        CategoryItem("Rau củ", R.drawable.vegetable, 7),
+        CategoryItem("Trái cây", R.drawable.fruits, 8),
         CategoryItem("Đồ uống", R.drawable.soft_drinks, 10),
         CategoryItem("Trứng", R.drawable.eggs, 180),
-        CategoryItem("Khác", R.drawable.balanced_diet, 7)
+        CategoryItem("Khác", R.drawable.balanced_diet, 10)
     )
 
     val unitOptions =

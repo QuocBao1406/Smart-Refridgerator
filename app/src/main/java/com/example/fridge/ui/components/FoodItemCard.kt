@@ -33,14 +33,14 @@ fun FoodItemCard(
     onCardClick: (FoodItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // --- 1. LOGIC VUỐT CỦA BRO (ĐÃ FIX LỖI KÉO LÙI) ---
+    
     val dismissState = rememberSwipeToDismissBoxState(
-        // CỰC QUAN TRỌNG: Trả về true để cho phép thẻ tự do lướt qua lướt lại
+        
         confirmValueChange = { true },
         positionalThreshold = { distance -> distance * 0.4f }
     )
 
-    // Giữ nguyên logic bắt sự kiện ngón tay của bro
+    
     var isFingerDown by remember { mutableStateOf(false) }
 
     LaunchedEffect(dismissState.currentValue, isFingerDown) {
@@ -65,7 +65,7 @@ fun FoodItemCard(
         state = dismissState,
         enableDismissFromStartToEnd = false,
 
-        // --- 2. MẶT SAU (NỀN XÓA) ---
+        
         backgroundContent = {
             val bgColor by animateColorAsState(
                 targetValue = if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart)
@@ -84,11 +84,11 @@ fun FoodItemCard(
             }
         },
 
-        // --- 3. MẶT TRƯỚC (GIAO DIỆN) ---
+        
         content = {
             val currentTime = System.currentTimeMillis()
-            val isExpired = food.expiry < currentTime
-            val isExpiringSoon = food.expiry in currentTime..(currentTime + (2L * 24 * 60 * 60 * 1000))
+            val isExpired = food.expiry < currentTime - (1L * 24 * 60 * 60 * 1000)
+            val isExpiringSoon = food.expiry in currentTime - (1L * 24 * 60 * 60 * 1000)..(currentTime + (2L * 24 * 60 * 60 * 1000))
 
             val statusColor = when {
                 isExpired -> Color(0xFFFF3B30)

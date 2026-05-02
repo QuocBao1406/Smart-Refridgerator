@@ -25,20 +25,32 @@ import com.example.fridge.ui.components.AddFoodBottomSheet
 import com.example.fridge.ui.components.BottomNavTab
 import com.example.fridge.ui.components.FoodDetaildEditDialog
 import com.example.fridge.ui.components.FoodItemCard
+import com.example.fridge.ui.components.NotificationBottomSheet
 import com.example.fridge.ui.viewmodel.FridgeViewModel
+import com.example.fridge.ui.viewmodel.NotificationViewModel
 
 @Composable
-fun FridgeScreen(viewModel: FridgeViewModel) {
-    val foodListState by viewModel.allFoodItem.collectAsState(initial = emptyList())
+fun FridgeScreen(
+    fridgeViewModel: FridgeViewModel,
+    notificationViewModel: NotificationViewModel
+) {
+    val foodListState by fridgeViewModel.allFoodItem.collectAsState(initial = emptyList())
     var showAddDialog by remember { mutableStateOf(false) }
     var selectedFood by remember { mutableStateOf<FoodItem?>(null)}
 
     var currentTab by remember { mutableStateOf<BottomNavTab>(BottomNavTab.Overview) }
 
+    val notifications by notificationViewModel.notifications.collectAsState()
+    val unreadCount by notificationViewModel.unreadCount.collectAsState()
+
+    var showNotifications by remember { mutableStateOf(false) }
+
     MainLayout(
         onFabClick = { showAddDialog = true },
         currentTab = currentTab,
-        onTabSelected = { newTab -> currentTab = newTab }
+        onTabSelected = { newTab -> currentTab = newTab },
+        unreadCount = unreadCount,
+        onNotificationClick = { showNotifications = true }
     ) { paddingValues ->
         when (currentTab) {
             BottomNavTab.Overview -> {
@@ -50,7 +62,7 @@ fun FridgeScreen(viewModel: FridgeViewModel) {
             BottomNavTab.Fridge -> {
                 HomeTab(
                     foodList = foodListState,
-                    onDeleteFood = { viewModel.deleteFood(it) },
+                    onDeleteFood = { fridgeViewModel.deleteFood(it) },
                     onCardClick = { selectedFood = it },
                     modifier = Modifier.padding(paddingValues)
                 )
@@ -60,11 +72,22 @@ fun FridgeScreen(viewModel: FridgeViewModel) {
             }
         }
 
+        if (showNotifications) {
+            NotificationBottomSheet(
+                notifications = notifications,
+                onDismiss = { showNotifications = false },
+                onMarkAllAsRead = { notificationViewModel.markAllAsRead() },
+                onDeleteNotification = { notification ->
+                    notificationViewModel.deleteNotification(notification)
+                }
+            )
+        }
+
         if(showAddDialog == true) {
             AddFoodBottomSheet(
                 onDismiss = { showAddDialog = false },
                 onSave = { name, image, quantity, unit, type, expiry ->
-                    viewModel.addFood(
+                    fridgeViewModel.addFood(
                         name = name,
                         image = image,
                         quantity = quantity.toDoubleOrNull() ?: 0.0,
@@ -92,7 +115,7 @@ fun FridgeScreen(viewModel: FridgeViewModel) {
                         expiry = newExpiry,
                     )
 
-                    viewModel.updateFood(updatedFood)
+                    fridgeViewModel.updateFood(updatedFood)
                 }
             )
         }
